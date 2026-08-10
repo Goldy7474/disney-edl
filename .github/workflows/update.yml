@@ -1,37 +1,31 @@
-name: Update Disney+ EDL IPs
+name: Update Disney EDL IPs
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # הרצה אוטומטית פעמיים ביום
-  workflow_dispatch: # מאפשר הרצה ידנית
+    - cron: '0 */6 * * *' # הרצה אוטומטית כל 6 שעות
+  workflow_dispatch: # מאפשר הרצה ידנית מתוך ממשק GitHub Actions
+
+permissions:
+  contents: write
 
 jobs:
   update-edl:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.10'
 
-      - name: Run ASN Resolution Script
+      - name: Run Resolution Script
         run: python update_ips.py
 
-      - name: Commit and Push if Changed
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add disney_ips.txt
-          
-          if git diff --staged --quiet; then
-            echo "No changes detected."
-          else
-            git commit -m "auto: update Disney+ IP list"
-            git push
-          fi
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update Disney EDL IP list [skip ci]"
+          file_pattern: "disney_ips.txt"
